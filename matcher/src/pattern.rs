@@ -380,19 +380,20 @@ impl Atom {
         &self,
         items: impl IntoIterator<Item = T>,
         matcher: &mut Matcher,
-    ) -> Vec<(T, u16)> {
+    ) -> Vec<(usize, T, u16)> {
         if self.needle.is_empty() {
-            return items.into_iter().map(|item| (item, 0)).collect();
+            return vec![];
         }
         let mut buf = Vec::new();
         let mut items: Vec<_> = items
             .into_iter()
-            .filter_map(|item| {
+            .enumerate()
+            .filter_map(|(i, item)| {
                 self.score(Utf32Str::new(item.as_ref(), &mut buf), matcher)
-                    .map(|score| (item, score))
+                    .map(|score| (i, item, score))
             })
             .collect();
-        items.sort_by_key(|(_, score)| Reverse(*score));
+        items.sort_by_key(|(_, _, score)| Reverse(*score));
         items
     }
 }
@@ -462,19 +463,20 @@ impl Pattern {
         &self,
         items: impl IntoIterator<Item = T>,
         matcher: &mut Matcher,
-    ) -> Vec<(T, u32)> {
+    ) -> Vec<(usize, T, u32)> {
         if self.atoms.is_empty() {
-            return items.into_iter().map(|item| (item, 0)).collect();
+            return vec![];
         }
         let mut buf = Vec::new();
         let mut items: Vec<_> = items
             .into_iter()
-            .filter_map(|item| {
+            .enumerate()
+            .filter_map(|(i, item)| {
                 self.score(Utf32Str::new(item.as_ref(), &mut buf), matcher)
-                    .map(|score| (item, score))
+                    .map(|score| (i, item, score))
             })
             .collect();
-        items.sort_by_key(|(_, score)| Reverse(*score));
+        items.sort_by_key(|(_, _, score)| Reverse(*score));
         items
     }
 
